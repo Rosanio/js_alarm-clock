@@ -18,8 +18,9 @@ var lib = require('bower-files')({
     }
   }
 });
+var browserSync = require('browser-sync').create();
 
-gulp.task('concatInterface', ['jshint'], function() {
+gulp.task('concatInterface', function() {
   return gulp.src(['./js/*-interface.js'])
     .pipe(concat('allConcat.js'))
     .pipe(gulp.dest('./tmp'));
@@ -39,7 +40,7 @@ gulp.task("minifyScripts", ["jsBrowserify"], function(){
     .pipe(gulp.dest("./build/js"));
 });
 
-gulp.task('jshint', function(){
+gulp.task('jsHint', function(){
   return gulp.src(['js/*.js'])
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
@@ -59,6 +60,22 @@ gulp.task("build", ['clean'], function(){
   gulp.start('bower');
 });
 
+gulp.task('serve', function() {
+  browserSync.init({
+    server: {
+      baseDir: "./",
+      index: "index.html"
+    }
+  });
+
+  gulp.watch(['js/*.js'], ['jsBuild']);
+  gulp.watch(['bower.json'], ['bowerBuild']);
+});
+
+gulp.task('jsBuild', ['jsBrowserify', 'jsHint'], function() {
+  browserSync.reload();
+});
+
 //bower tasks
 
 gulp.task('bowerJS', function () {
@@ -75,3 +92,7 @@ gulp.task('bowerCSS', function() {
 });
 
 gulp.task('bower', ['bowerJS', 'bowerCSS']);
+
+gulp.task('bowerBuild', ['bower'], function() {
+  browserSync.reload();
+});
